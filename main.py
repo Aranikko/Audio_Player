@@ -1,33 +1,26 @@
 from typing import Dict
 from pygame import mixer
 import os
-
+import eyed3
 import flet
-from flet import (
-    Column,
-    ElevatedButton,
-    FilePicker,
-    FilePickerResultEvent,
-    FilePickerUploadEvent,
-    FilePickerUploadFile,
-    Page,
-    ProgressRing,
-    Ref,
-    Row,
-    Text, 
-    icons,
-)
+from flet import *
 
 mixer.init()
 
 audio_name = []
+time_tracks = []
 play = False
 
 for file_name in os.listdir("audio"):
     if os.path.isfile(os.path.join("audio", file_name)):
         audio_name.append("audio/" + file_name)
-print(audio_name)
+        
+for i in range(len(audio_name)):
+    time_tracks.append(round(eyed3.load(audio_name[i]).info.time_secs/60, 2))
+print(time_tracks)
+
 def main(page: Page):
+    page.window_maximizable = False
     global play
     page.title = "Audio Player"
     prog_bars: Dict[str, ProgressRing] = {}
@@ -57,6 +50,11 @@ def main(page: Page):
     
     page.overlay.append(file_picker)
     
+    while play:
+        for i in range(len(audio_name)):
+            mixer.music.load(audio_name[i])
+            mixer.music.play()
+    
     def volume(e):
         mixer.music.set_volume(e.control.value)
     
@@ -85,32 +83,37 @@ def main(page: Page):
         ]
     ) 
     # Создайте кнопку
-    btn_play_pause = flet.IconButton(icon=icons.PAUSE, on_click=player_play)
+    btn_play_pause = flet.IconButton(icon=icons.PLAY_ARROW, on_click=player_play)
+    btn_next_right = flet.IconButton(icon=icons.SKIP_NEXT)
+    btn_next_left = flet.IconButton(icon=icons.SKIP_PREVIOUS)
 
-    
-
-    # Добавьте остальные элементы, если необходимо
-    page.add(pb, Column(ref=files))
+    # page.add(pb, Column(ref=files))
 
     page.add(
         flet.Row(
             [
-                btn_play_pause
+                pb,
+                Column(ref=files),
+                flet.Text("                                                                                                                             "),
+                btn_next_left,
+                btn_play_pause,
+                btn_next_right,
+                flet.Text("                                                                 "),
+                flet.Text("Volume:"),
+                flet.Slider(value=0.1, on_change=volume)
             ],
             alignment=flet.MainAxisAlignment.CENTER, 
         )
     )
     
-    page.add(
-        flet.Row(
-                [
-                    flet.Text("Volume:"),
-                    flet.Slider(value=0.1, on_change=volume)
-                ],
-                alignment=flet.MainAxisAlignment.END,  # Изменили значение на END
-            )
-        )
-
-
-        
+    # page.add(
+    #     flet.Row(
+    #             [
+    #                 flet.Text("Volume:"),
+    #                 flet.Slider(value=0.1, on_change=volume)
+    #             ],
+    #             alignment=flet.MainAxisAlignment.END,  # Изменили значение на END
+    #         )
+    #     )
+      
 flet.app(target=main, upload_dir="audio", view=flet.FLET_APP_WEB)
