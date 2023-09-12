@@ -1,5 +1,6 @@
 from typing import Dict
 from pygame import mixer
+import os
 
 import flet
 from flet import (
@@ -22,13 +23,17 @@ mixer.init()
 audio_name = []
 play = False
 
+for file_name in os.listdir("audio"):
+    if os.path.isfile(os.path.join("audio", file_name)):
+        audio_name.append("audio/" + file_name)
+print(audio_name)
 def main(page: Page):
     global play
     page.title = "Audio Player"
     prog_bars: Dict[str, ProgressRing] = {}
     files = Ref[Column]()
     upload_button = Ref[ElevatedButton]()
-
+    
     def file_picker_result(e: FilePickerResultEvent):
         if upload_button.current is not None:
             upload_button.current.disabled = True if e.files is None else False
@@ -51,6 +56,9 @@ def main(page: Page):
     file_picker = FilePicker(on_result=file_picker_result)
     
     page.overlay.append(file_picker)
+    
+    def volume(e):
+        mixer.music.set_volume(e.control.value)
     
     def player_play(e):
         global play
@@ -79,6 +87,11 @@ def main(page: Page):
     # Создайте кнопку
     btn_play_pause = flet.IconButton(icon=icons.PAUSE, on_click=player_play)
 
+    
+
+    # Добавьте остальные элементы, если необходимо
+    page.add(pb, Column(ref=files))
+
     page.add(
         flet.Row(
             [
@@ -87,11 +100,17 @@ def main(page: Page):
             alignment=flet.MainAxisAlignment.CENTER, 
         )
     )
-
-    # Добавьте остальные элементы, если необходимо
-    page.add(pb, Column(ref=files))
-
     
+    page.add(
+        flet.Row(
+                [
+                    flet.Text("Volume:"),
+                    flet.Slider(value=0.1, on_change=volume)
+                ],
+                alignment=flet.MainAxisAlignment.END,  # Изменили значение на END
+            )
+        )
+
 
         
 flet.app(target=main, upload_dir="audio", view=flet.FLET_APP_WEB)

@@ -1,28 +1,14 @@
 import flet as ft
 
-def main(page: ft.Page):
-    page.title = "Flet counter example"
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
+def main(page):
 
-    txt_number = ft.TextField(value="0", text_align="right", width=100)
-
-    def minus_click(e):
-        txt_number.value = str(int(txt_number.value) - 1)
+    def slider_changed(e):
+        t.value = f"Slider changed to {e.control.value}"
         page.update()
 
-    def plus_click(e):
-        txt_number.value = str(int(txt_number.value) + 1)
-        page.update()
-
+    t = ft.Text()
     page.add(
-        ft.Row(
-            [
-                ft.IconButton(ft.icons.REMOVE, on_click=minus_click),
-                txt_number,
-                ft.IconButton(ft.icons.ADD, on_click=plus_click),
-            ],
-            alignment=ft.MainAxisAlignment.CENTER,
-        )
-    )
+        ft.Text("Slider with 'on_change' event:"),
+        ft.Slider(min=0, max=100, divisions=10, label="{value}%", on_change=slider_changed), t)
 
 ft.app(target=main)
